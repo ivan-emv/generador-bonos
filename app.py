@@ -2,7 +2,7 @@ import streamlit as st
 from datetime import datetime
 from docx import Document
 import re
-import os
+import tempfile
 
 # Función para validar el formato de la fecha
 def validar_fecha(fecha):
@@ -46,9 +46,10 @@ def generar_bono_word(datos):
         if "(OBSERVACIONES)" in paragraph.text:
             paragraph.text = paragraph.text.replace("(OBSERVACIONES)", datos['observaciones'])
 
-    output_path = "bono_generado.docx"
-    doc.save(output_path)
-    return output_path
+    # Guardar en archivo temporal
+    tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".docx")
+    doc.save(tmp_file.name)
+    return tmp_file.name
 
 # Aplicación principal
 def app():
@@ -70,7 +71,7 @@ def app():
         st.error("Error en la Fecha, recuerda que el formato es DD/MM/AAAA.")
     servicios1 = st.text_area("Servicios 1")
 
-    # Inicializamos las variables para eventos adicionales
+    # Inicializamos las variables adicionales
     fecha2 = servicios2 = fecha3 = servicios3 = ""
 
     # Segundo acontecimiento
@@ -90,11 +91,12 @@ def app():
     # Observaciones
     observaciones = st.text_area("Observaciones")
 
-    # Botón para generar
+    # Generar bono
     if st.button("Generar Bono"):
-        # Validaciones obligatorias
-        if not (fecha and validar_fecha(fecha) and fecha1 and validar_fecha(fecha1)):
-            st.error("Por favor completa las fechas obligatorias en formato DD/MM/AAAA.")
+        # Validación mínima antes de generar
+        if not all([fecha, fecha1, numero_referencia, nombre]) or \
+           not validar_fecha(fecha) or not validar_fecha(fecha1):
+            st.error("Completa los campos obligatorios y asegúrate del formato de fechas.")
             return
 
         datos = {
