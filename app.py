@@ -1,43 +1,45 @@
 import streamlit as st
 from datetime import datetime
+from docx import Document
 import os
 
-# Función para generar el bono
-def generar_bono(datos):
-    bono_template = f"""
-    Bono
+# Función para generar el bono en formato Word (.docx)
+def generar_bono_word(datos):
+    doc = Document()
 
-    García de Paredes 55-1º / 28010 / Madrid
-    CIF: B-81742421
-    Tel: +34 91 758 92 00 / Fax: +34 91 548 74 33
-    E-Mail:
-    administración.proveedores@europamundo.com
-    contratacion@europamundo.com
-    gruposope@europamundo.com
+    # Título del bono
+    doc.add_heading('Bono', 0)
 
-    Nº de Referencia: {datos['numero_referencia']}
-    FECHA: {datos['fecha']}
+    # Información de contacto
+    doc.add_paragraph("García de Paredes 55-1º / 28010 / Madrid\n"
+                      "CIF: B-81742421\n"
+                      "Tel: +34 91 758 92 00 / Fax: +34 91 548 74 33\n"
+                      "E-Mail:\nadministración.proveedores@europamundo.com\n"
+                      "contratacion@europamundo.com\ngruposope@europamundo.com\n")
 
-    A: {datos['dirigido_a']}
-    Nombre: {datos['nombre']}   Nº de Personas: {datos['numero_personas']}
+    # Detalles del bono
+    doc.add_paragraph(f"Nº de Referencia: {datos['numero_referencia']}")
+    doc.add_paragraph(f"FECHA: {datos['fecha']}")
+    doc.add_paragraph(f"A: {datos['dirigido_a']}")
+    doc.add_paragraph(f"Nombre: {datos['nombre']}   Nº de Personas: {datos['numero_personas']}")
+    doc.add_paragraph("FECHAS:")
+    doc.add_paragraph(datos['fecha1'])
+    doc.add_paragraph(datos['fecha2'] if datos['fecha2'] else "")
+    doc.add_paragraph(datos['fecha3'] if datos['fecha3'] else "")
+    doc.add_paragraph("SERVICIOS:")
+    doc.add_paragraph(datos['servicios1'])
+    doc.add_paragraph(datos['servicios2'] if datos['servicios2'] else "")
+    doc.add_paragraph(datos['servicios3'] if datos['servicios3'] else "")
+    doc.add_paragraph("OBSERVACIONES:")
+    doc.add_paragraph(datos['observaciones'])
 
-    FECHAS:
-    {datos['fecha1']}
-    {datos['fecha2']}
-    {datos['fecha3']}
+    # Firma
+    doc.add_paragraph("FIRMA")
 
-    SERVICIOS:
-    {datos['servicios1']}
-    {datos['servicios2']}
-    {datos['servicios3']}
-
-    OBSERVACIONES:
-    {datos['observaciones']}
-    
-    FIRMA
-    """
-
-    return bono_template
+    # Guardar el documento
+    path = "/mnt/data/bono_generado.docx"
+    doc.save(path)
+    return path
 
 # Interfaz de la app
 def app():
@@ -84,17 +86,11 @@ def app():
             "observaciones": observaciones
         }
 
-        bono = generar_bono(datos)
+        # Generar el archivo Word
+        path = generar_bono_word(datos)
 
-        # Mostrar el bono generado
-        st.text_area("Bono Generado", bono, height=300)
-
-        # Opción para descargar el bono como archivo .txt
-        if st.button("Descargar Bono"):
-            path = "/mnt/data/bono_generado.txt"
-            with open(path, "w") as f:
-                f.write(bono)
-            st.download_button("Descargar", path)
+        # Opción para descargar el bono como archivo Word (.docx)
+        st.download_button("Descargar Bono como Word", path)
 
 if __name__ == "__main__":
     app()
