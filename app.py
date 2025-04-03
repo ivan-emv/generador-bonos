@@ -55,12 +55,12 @@ def app():
     fecha1 = st.date_input("Fecha 1", datetime.today())
     servicios1 = st.text_area("Servicios 1")
 
-    # Permitir añadir más eventos
+    # Permitir añadir más eventos con botones con nombre único
     fecha2, servicios2, fecha3, servicios3 = None, None, None, None
-    if st.button("Cargar Otro", key="cargar_otro_1"):
+    if st.button("Cargar Fecha 2", key="cargar_fecha_2"):
         fecha2 = st.date_input("Fecha 2", datetime.today())
         servicios2 = st.text_area("Servicios 2")
-    if st.button("Cargar Otro", key="cargar_otro_2"):
+    if st.button("Cargar Fecha 3", key="cargar_fecha_3"):
         fecha3 = st.date_input("Fecha 3", datetime.today())
         servicios3 = st.text_area("Servicios 3")
 
