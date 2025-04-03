@@ -5,38 +5,37 @@ import os
 
 # Función para generar el bono en formato Word (.docx)
 def generar_bono_word(datos):
-    doc = Document()
+    # Crear un objeto Document a partir del archivo de Word original
+    doc = Document("/mnt/data/bono_original.docx")
 
-    # Título del bono
-    doc.add_heading('Bono', 0)
+    # Buscar y reemplazar los campos en el documento
+    for paragraph in doc.paragraphs:
+        if "(NUMEROREFERENCIA)" in paragraph.text:
+            paragraph.text = paragraph.text.replace("(NUMEROREFERENCIA)", datos['numero_referencia'])
+        if "(FECHA)" in paragraph.text:
+            paragraph.text = paragraph.text.replace("(FECHA)", str(datos['fecha']))
+        if "(INSERTEA)" in paragraph.text:
+            paragraph.text = paragraph.text.replace("(INSERTEA)", datos['dirigido_a'])
+        if "(INSERTENOMBRE)" in paragraph.text:
+            paragraph.text = paragraph.text.replace("(INSERTENOMBRE)", datos['nombre'])
+        if "(INSERTENUMEROPERSONAS)" in paragraph.text:
+            paragraph.text = paragraph.text.replace("(INSERTENUMEROPERSONAS)", str(datos['numero_personas']))
+        if "(FECHA1)" in paragraph.text:
+            paragraph.text = paragraph.text.replace("(FECHA1)", str(datos['fecha1']))
+        if "(SERVICIOS1)" in paragraph.text:
+            paragraph.text = paragraph.text.replace("(SERVICIOS1)", datos['servicios1'])
+        if "(FECHA2)" in paragraph.text:
+            paragraph.text = paragraph.text.replace("(FECHA2)", str(datos['fecha2']) if datos['fecha2'] else "")
+        if "(SERVICIOS2)" in paragraph.text:
+            paragraph.text = paragraph.text.replace("(SERVICIOS2)", datos['servicios2'] if datos['servicios2'] else "")
+        if "(FECHA3)" in paragraph.text:
+            paragraph.text = paragraph.text.replace("(FECHA3)", str(datos['fecha3']) if datos['fecha3'] else "")
+        if "(SERVICIOS3)" in paragraph.text:
+            paragraph.text = paragraph.text.replace("(SERVICIOS3)", datos['servicios3'] if datos['servicios3'] else "")
+        if "(OBSERVACIONES)" in paragraph.text:
+            paragraph.text = paragraph.text.replace("(OBSERVACIONES)", datos['observaciones'])
 
-    # Información de contacto
-    doc.add_paragraph("García de Paredes 55-1º / 28010 / Madrid\n"
-                      "CIF: B-81742421\n"
-                      "Tel: +34 91 758 92 00 / Fax: +34 91 548 74 33\n"
-                      "E-Mail:\nadministración.proveedores@europamundo.com\n"
-                      "contratacion@europamundo.com\ngruposope@europamundo.com\n")
-
-    # Detalles del bono
-    doc.add_paragraph(f"Nº de Referencia: {datos['numero_referencia']}")
-    doc.add_paragraph(f"FECHA: {datos['fecha']}")
-    doc.add_paragraph(f"A: {datos['dirigido_a']}")
-    doc.add_paragraph(f"Nombre: {datos['nombre']}   Nº de Personas: {datos['numero_personas']}")
-    doc.add_paragraph("FECHAS:")
-    doc.add_paragraph(datos['fecha1'])
-    doc.add_paragraph(datos['fecha2'] if datos['fecha2'] else "")
-    doc.add_paragraph(datos['fecha3'] if datos['fecha3'] else "")
-    doc.add_paragraph("SERVICIOS:")
-    doc.add_paragraph(datos['servicios1'])
-    doc.add_paragraph(datos['servicios2'] if datos['servicios2'] else "")
-    doc.add_paragraph(datos['servicios3'] if datos['servicios3'] else "")
-    doc.add_paragraph("OBSERVACIONES:")
-    doc.add_paragraph(datos['observaciones'])
-
-    # Firma
-    doc.add_paragraph("FIRMA")
-
-    # Guardar el documento
+    # Guardar el documento modificado
     path = "/mnt/data/bono_generado.docx"
     doc.save(path)
     return path
