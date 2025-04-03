@@ -46,7 +46,7 @@ def generar_bono_word(datos):
         if "(OBSERVACIONES)" in paragraph.text:
             paragraph.text = paragraph.text.replace("(OBSERVACIONES)", datos['observaciones'])
 
-    output_path = "/mnt/data/bono_generado.docx"
+    output_path = "bono_generado.docx"
     doc.save(output_path)
     return output_path
 
