@@ -15,7 +15,7 @@ def validar_fecha(fecha):
             return False
     return False
 
-# Función para generar el bono Word
+# Función para generar el bono Word sin corromper el archivo
 def generar_bono_word(datos):
     doc_path = "bono.docx"
     doc = Document(doc_path)
@@ -46,10 +46,11 @@ def generar_bono_word(datos):
         if "(OBSERVACIONES)" in paragraph.text:
             paragraph.text = paragraph.text.replace("(OBSERVACIONES)", datos['observaciones'])
 
-    # Guardar en archivo temporal
-    tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".docx")
-    doc.save(tmp_file.name)
-    return tmp_file.name
+    # Guardar en archivo temporal de forma segura
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
+        tmp_path = tmp.name
+    doc.save(tmp_path)
+    return tmp_path
 
 # Aplicación principal
 def app():
@@ -71,7 +72,7 @@ def app():
         st.error("Error en la Fecha, recuerda que el formato es DD/MM/AAAA.")
     servicios1 = st.text_area("Servicios 1")
 
-    # Inicializamos las variables adicionales
+    # Variables para eventos adicionales
     fecha2 = servicios2 = fecha3 = servicios3 = ""
 
     # Segundo acontecimiento
@@ -93,7 +94,6 @@ def app():
 
     # Generar bono
     if st.button("Generar Bono"):
-        # Validación mínima antes de generar
         if not all([fecha, fecha1, numero_referencia, nombre]) or \
            not validar_fecha(fecha) or not validar_fecha(fecha1):
             st.error("Completa los campos obligatorios y asegúrate del formato de fechas.")
