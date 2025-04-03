@@ -6,7 +6,7 @@ import re  # Importar la librería para las expresiones regulares
 # Función para generar el bono en formato Word (.docx)
 def generar_bono_word(datos):
     # Crear un objeto Document a partir del archivo de Word original (bono.docx)
-    doc = Document("bono.docx")  # Usamos el nombre correcto del archivo
+    doc_path = "bono.docx"  # Usamos el nombre correcto del archivo
 
     # Buscar y reemplazar los campos en el documento
     for paragraph in doc.paragraphs:
