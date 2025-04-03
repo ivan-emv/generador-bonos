@@ -1,7 +1,7 @@
 import streamlit as st
 from datetime import datetime
 from docx import Document
-import os
+import re  # Importar la librería para las expresiones regulares
 
 # Función para generar el bono en formato Word (.docx)
 def generar_bono_word(datos):
@@ -40,28 +40,52 @@ def generar_bono_word(datos):
     doc.save(path)
     return path
 
+# Función para validar el formato de la fecha
+def validar_fecha(fecha):
+    # Expresión regular para el formato DD/MM/YYYY
+    regex = r'^\d{2}/\d{2}/\d{4}$'
+    if re.match(regex, fecha):
+        try:
+            # Intentar convertir la fecha a un objeto datetime para verificar su validez
+            datetime.strptime(fecha, "%d/%m/%Y")
+            return True
+        except ValueError:
+            return False
+    return False
+
 # Interfaz de la app
 def app():
     st.title("Generador de Bonos de Incidencias")
 
     # Campos para información principal
-    fecha = st.date_input("Fecha de emisión del Bono", datetime.today())
+    fecha = st.text_input("Fecha de emisión del Bono (DD/MM/YYYY)")
+    if fecha and not validar_fecha(fecha):
+        st.error("Error en la Fecha, recuerda que el formato es DD/MM/AAAA.")
+
     numero_referencia = st.text_input("Número de Referencia")
     dirigido_a = st.text_input("Dirigido A")
     nombre = st.text_input("Nombre")
     numero_personas = st.number_input("Número de Personas", min_value=1)
 
     # Campos para los eventos (Acontecimientos)
-    fecha1 = st.date_input("Fecha 1", datetime.today())
+    fecha1 = st.text_input("Fecha 1 (DD/MM/YYYY)")
+    if fecha1 and not validar_fecha(fecha1):
+        st.error("Error en la Fecha, recuerda que el formato es DD/MM/AAAA.")
+    
     servicios1 = st.text_area("Servicios 1")
 
     # Permitir añadir más eventos con botones con nombre único
     fecha2, servicios2, fecha3, servicios3 = None, None, None, None
     if st.button("Cargar Fecha 2", key="cargar_fecha_2"):
-        fecha2 = st.date_input("Fecha 2", datetime.today())
+        fecha2 = st.text_input("Fecha 2 (DD/MM/YYYY)")
+        if fecha2 and not validar_fecha(fecha2):
+            st.error("Error en la Fecha, recuerda que el formato es DD/MM/AAAA.")
         servicios2 = st.text_area("Servicios 2")
+    
     if st.button("Cargar Fecha 3", key="cargar_fecha_3"):
-        fecha3 = st.date_input("Fecha 3", datetime.today())
+        fecha3 = st.text_input("Fecha 3 (DD/MM/YYYY)")
+        if fecha3 and not validar_fecha(fecha3):
+            st.error("Error en la Fecha, recuerda que el formato es DD/MM/AAAA.")
         servicios3 = st.text_area("Servicios 3")
 
     # Campo de Observaciones
