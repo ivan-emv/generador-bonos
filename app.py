@@ -3,9 +3,8 @@ from datetime import datetime
 from docx import Document
 import re
 import tempfile
-import shutil
 
-# Función para validar el formato de la fecha
+# Validación de formato DD/MM/AAAA
 def validar_fecha(fecha):
     regex = r'^\d{2}/\d{2}/\d{4}$'
     if re.match(regex, fecha):
@@ -16,44 +15,51 @@ def validar_fecha(fecha):
             return False
     return False
 
-# Reemplazo en párrafos y en tablas
-def reemplazar_texto(doc, marcador, valor):
+# Reemplazo robusto en párrafos y tablas, preservando estilos
+def reemplazar_texto_en_runs(runs, marcador, valor):
+    for run in runs:
+        if marcador in run.text:
+            run.text = run.text.replace(marcador, valor)
+
+def reemplazar_en_documento(doc, marcador, valor):
     # Párrafos normales
     for paragraph in doc.paragraphs:
-        if marcador in paragraph.text:
-            paragraph.text = paragraph.text.replace(marcador, valor)
+        reemplazar_texto_en_runs(paragraph.runs, marcador, valor)
 
-    # Dentro de tablas
+    # Dentro de cada celda de tabla
     for table in doc.tables:
         for row in table.rows:
             for cell in row.cells:
-                if marcador in cell.text:
-                    cell.text = cell.text.replace(marcador, valor)
+                for paragraph in cell.paragraphs:
+                    reemplazar_texto_en_runs(paragraph.runs, marcador, valor)
 
-# Función para generar el bono Word sin corromperlo
+# Generar el bono Word desde plantilla
 def generar_bono_word(datos):
-    doc_path = "bono.docx"
-    doc = Document(doc_path)
+    doc = Document("bono.docx")
 
-    reemplazar_texto(doc, "(NUMEROREFERENCIA)", datos['numero_referencia'])
-    reemplazar_texto(doc, "(FECHA)", datos['fecha'])
-    reemplazar_texto(doc, "(INSERTEA)", datos['dirigido_a'])
-    reemplazar_texto(doc, "(INSERTENOMBRE)", datos['nombre'])
-    reemplazar_texto(doc, "(INSERTENUMEROPERSONAS)", str(datos['numero_personas']))
-    reemplazar_texto(doc, "(FECHA1)", datos['fecha1'])
-    reemplazar_texto(doc, "(SERVICIOS1)", datos['servicios1'])
-    reemplazar_texto(doc, "(FECHA2)", datos['fecha2'] if datos['fecha2'] else "")
-    reemplazar_texto(doc, "(SERVICIOS2)", datos['servicios2'] if datos['servicios2'] else "")
-    reemplazar_texto(doc, "(FECHA3)", datos['fecha3'] if datos['fecha3'] else "")
-    reemplazar_texto(doc, "(SERVICIOS3)", datos['servicios3'] if datos['servicios3'] else "")
-    reemplazar_texto(doc, "(OBSERVACIONES)", datos['observaciones'])
+    campos = {
+        "(NUMEROREFERENCIA)": datos['numero_referencia'],
+        "(FECHA)": datos['fecha'],
+        "(INSERTEA)": datos['dirigido_a'],
+        "(INSERTENOMBRE)": datos['nombre'],
+        "(INSERTENUMEROPERSONAS)": str(datos['numero_personas']),
+        "(FECHA1)": datos['fecha1'],
+        "(SERVICIOS1)": datos['servicios1'],
+        "(FECHA2)": datos['fecha2'] or "",
+        "(SERVICIOS2)": datos['servicios2'] or "",
+        "(FECHA3)": datos['fecha3'] or "",
+        "(SERVICIOS3)": datos['servicios3'] or "",
+        "(OBSERVACIONES)": datos['observaciones']
+    }
 
-    # Guardar de forma segura
-    tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".docx")
-    doc.save(tmp_file.name)
-    return tmp_file.name
+    for marcador, valor in campos.items():
+        reemplazar_en_documento(doc, marcador, valor)
 
-# Aplicación principal
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".docx")
+    doc.save(tmp.name)
+    return tmp.name
+
+# Interfaz Streamlit
 def app():
     st.title("Generador de Bonos de Incidencias")
 
