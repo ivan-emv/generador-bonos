@@ -35,7 +35,7 @@ def reemplazar_en_documento(doc, marcador, valor):
 
 # Generar el bono Word desde plantilla
 def generar_bono_word(datos):
-    doc = Document("bono.docx")
+    doc = Document("bono_nuevo.docx")
 
     campos = {
         "(NUMEROREFERENCIA)": datos['numero_referencia'],
